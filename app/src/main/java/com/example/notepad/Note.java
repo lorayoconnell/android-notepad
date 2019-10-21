@@ -1,11 +1,15 @@
 package com.example.notepad;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
 
 public class Note implements Serializable {
 
+    private static final String TAG = "Note";
+    
     private String noteTitle;
     private String noteContent;
     private String noteDate;

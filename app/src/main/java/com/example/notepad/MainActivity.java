@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "MainActivity";
 
-    private static final int CODE_EDITNOTE_ACTIVITY = 10;
+    private static final int EDIT_NOTE_CODE = 10;
+    private static final int NEW_NOTE_CODE = 11;
 
     private ArrayList<Note> noteList = new ArrayList<>();
     private RecyclerView recyclerView;
@@ -54,6 +55,8 @@ public class MainActivity extends AppCompatActivity
         updateTitle();  // reflects current number of notes
     }
 
+
+
     private void makeList() {
         // to have some default notes loaded
         // maybe a 'welcome to notes' object with some information?
@@ -76,16 +79,19 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
-    public void openEditActivity() {
+    public void createNewNote() {        // openEditActivity
+        Log.d(TAG, "createNewNote: CREATE NEW NOTE");
+        currNote = -1;
         Intent intent = new Intent(this, EditActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, NEW_NOTE_CODE);
     }
 
     public void openNoteInEditActivity(View view, int pos) {
+        Log.d(TAG, "openNoteInEditActivity: EDIT EXISTING NOTE");
         Note selectedNote = noteList.get(pos);
-        Intent intent = new Intent(MainActivity.this, EditActivity.class);
+        Intent intent = new Intent(this, EditActivity.class);
         intent.putExtra("note", selectedNote);
-        startActivityForResult(intent, CODE_EDITNOTE_ACTIVITY);
+        startActivityForResult(intent, EDIT_NOTE_CODE);
     }
 
     @Override
@@ -98,8 +104,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.addNote:
-                // open new activity to add a new note
-                openEditActivity();
+                createNewNote();
                 break;
             case R.id.about:
                 openAboutActivity();
@@ -152,27 +157,75 @@ public class MainActivity extends AppCompatActivity
     
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CODE_EDITNOTE_ACTIVITY) {
-            if (resultCode == RESULT_OK) {
 
-                Note note = (Note) data.getSerializableExtra("input");
-                String noteTitle = note.getNoteTitle();
-                String noteContent = note.getNoteContent();
-
-                Note n = noteList.get(currNote);
-                n.setNoteTitle(noteTitle);
-                n.setNoteContent(noteContent);
-                
-                noteAdapter.notifyDataSetChanged();
-            }
+        if (requestCode == EDIT_NOTE_CODE) {
+            Log.d(TAG, "onActivityResult: EDIT_NOTE_CODE");
         }
+        else if (requestCode == NEW_NOTE_CODE) {
+            Log.d(TAG, "onActivityResult: NEW_NOTE_CODE");
+        }
+
+
+
+        if (data.hasExtra("input")) {
+            Note note = (Note) data.getSerializableExtra("input");
+
+            if (note != null) {
+                Log.d(TAG, "onActivityResult: note object is NOT null");
+
+                String title = note.getNoteTitle();
+                if (title != null) {
+                    Log.d(TAG, "onActivityResult: title: " + title);
+
+                    String content = note.getNoteContent();
+                    if (content != null) {
+                        Log.d(TAG, "onActivityResult: content: " + content);
+
+                        String update = note.getLastUpdateTime();
+                        if (update != null) {
+                            Log.d(TAG, "onActivityResult: update: " + update);
+
+
+
+
+
+                            if (currNote == -1) {
+                                Log.d(TAG, "onActivityResult: This is a new note to be added");
+
+                                noteList.add(note);
+
+
+                            }
+                            else {
+                                Log.d(TAG, "onActivityResult: This is an existing note at index " + currNote);
+                                Note n = noteList.get(currNote);
+                                n.setNoteTitle(title);
+                                n.setNoteContent(content);
+                                n.setLastUpdateTime(update);
+
+                            }
+
+
+
+
+                        }
+                        else Log.d(TAG, "onActivityResult: ERROR5");
+                    }
+                    else Log.d(TAG, "onActivityResult: ERROR4");
+                }
+                else Log.d(TAG, "onActivityResult: ERROR3");
+            }
+            else Log.d(TAG, "onActivityResult: ERROR2");
+        }
+        else Log.d(TAG, "onActivityResult: ERROR1");
+
+
+        noteAdapter.notifyDataSetChanged();
+        updateTitle();
+
     }
 
     private void showNotes() {
-
-    }
-
-    public void addNote(View view) {
 
     }
 
