@@ -24,6 +24,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
+
+
+/**
+ *
+ *
+ *  still need to:
+ *  make sure notes appear in order based on last updated timestamp
+ *
+ *
+ */
+
+
+
 
 public class MainActivity extends AppCompatActivity
         implements View.OnClickListener, View.OnLongClickListener {
@@ -145,13 +159,6 @@ public class MainActivity extends AppCompatActivity
         super.onBackPressed();
     }
 
-
-    public String getCurrentTime() {
-        // system.printmillis() then convert to a real timestamp
-        // will talk about in lecture 5?
-        return "time";
-    }
-
     // auto-save when onpause
 
     
@@ -164,8 +171,6 @@ public class MainActivity extends AppCompatActivity
         else if (requestCode == NEW_NOTE_CODE) {
             Log.d(TAG, "onActivityResult: NEW_NOTE_CODE");
         }
-
-
 
         if (data.hasExtra("input")) {
             Note note = (Note) data.getSerializableExtra("input");
@@ -219,6 +224,8 @@ public class MainActivity extends AppCompatActivity
         }
         else Log.d(TAG, "onActivityResult: ERROR1");
 
+
+        // Collections.sort(noteList);
 
         noteAdapter.notifyDataSetChanged();
         updateTitle();

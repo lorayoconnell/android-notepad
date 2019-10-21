@@ -10,6 +10,11 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 public class EditActivity extends AppCompatActivity {
 
     private static final String TAG = "EditActivity";
@@ -49,11 +54,20 @@ public class EditActivity extends AppCompatActivity {
 
         String title = editTitleText.getText().toString();
         String content = editContentText.getText().toString();
-        String update = "date & time";
+        String update = getUpdateTime();
+
+        getUpdateTime();
+
 
         if (note == null) {
             Log.d(TAG, "updateNote: Note object does not yet exist.");
             note = new Note(title, content, update);
+        } else if (title.isEmpty()) {
+
+
+            // dialog telling user that title cannot be empty
+
+
         }
         else {
             Log.d(TAG, "updateNote: Updating an existing note.");
@@ -70,6 +84,12 @@ public class EditActivity extends AppCompatActivity {
         data.putExtra("input", note);
         setResult(RESULT_OK, data);
         finish();
+    }
+
+    private String getUpdateTime() {
+        Date now = Calendar.getInstance().getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d, h:mm a");
+        return sdf.format(now);
     }
 
     @Override
@@ -95,6 +115,11 @@ public class EditActivity extends AppCompatActivity {
         Log.d(TAG, "onBackPressed: ");
         Intent data = new Intent();
         // updateNote();
+
+
+
+
+
 
 
 
