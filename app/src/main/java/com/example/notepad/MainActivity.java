@@ -49,13 +49,17 @@ public class MainActivity extends AppCompatActivity
         setTitle("Notes (" + noteList.size() + ")");
     }
 
-
     public void testClick() {
         Toast.makeText(this, "Hi", Toast.LENGTH_LONG).show();
     }
 
     public void openAboutActivity() {
         Intent intent = new Intent(this, AboutActivity.class);
+        startActivity(intent);
+    }
+
+    public void openEditActivity() {
+        Intent intent = new Intent(this, EditActivity.class);
         startActivity(intent);
     }
 
@@ -70,6 +74,7 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.addNote:
                 // open new activity to add a new note
+                openEditActivity();
                 break;
             case R.id.about:
                 openAboutActivity();
@@ -85,6 +90,7 @@ public class MainActivity extends AppCompatActivity
         int pos = recyclerView.getChildLayoutPosition(view);
         Note selection = noteList.get(pos);
         Toast.makeText(this, "Selected: " + selection.getNoteTitle(), Toast.LENGTH_LONG).show();
+        // open EditActivity passing in current selection
     }
 
     /**
