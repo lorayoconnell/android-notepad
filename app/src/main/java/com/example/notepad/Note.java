@@ -1,17 +1,19 @@
 package com.example.notepad;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 
 public class Note implements Serializable {
 
     private String noteTitle;
     private String noteContent;
-    private String lastUpdateTime;
+    private String noteDate;
 
     public Note(String noteTitle, String noteContent, String lastUpdateTime) {
         this.noteTitle = noteTitle;
         this.noteContent = noteContent;
-        this.lastUpdateTime = lastUpdateTime;
+        this.noteDate = lastUpdateTime;
     }
 
     public String getNoteTitle() {
@@ -23,7 +25,7 @@ public class Note implements Serializable {
     }
 
     public String getLastUpdateTime() {
-        return lastUpdateTime;
+        return noteDate;
     }
 
     public void setNoteTitle(String noteTitle) {
@@ -35,6 +37,12 @@ public class Note implements Serializable {
     }
 
     public void setLastUpdateTime(String lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
+        this.noteDate = lastUpdateTime;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return this.noteTitle + ": " + this.noteContent + ": " + this.noteDate;
     }
 }

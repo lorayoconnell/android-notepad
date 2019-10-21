@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
@@ -37,8 +48,10 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setAdapter(noteAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        loadFile();
+
         makeList();
-        updateTitle();
+        updateTitle();  // reflects current number of notes
     }
 
     private void makeList() {
@@ -149,13 +162,69 @@ public class MainActivity extends AppCompatActivity
                 Note n = noteList.get(currNote);
                 n.setNoteTitle(noteTitle);
                 n.setNoteContent(noteContent);
-
-
-                Log.d(TAG, "onActivityResult: noteTitle: " + noteTitle + " noteList[i]: ");
-
+                
                 noteAdapter.notifyDataSetChanged();
             }
         }
+    }
+
+    private void showNotes() {
+
+    }
+
+    public void addNote(View view) {
+
+    }
+
+    private void loadFile() {
+        Log.d(TAG, "loadFile: LOADING JSON FILE");
+        try {
+            InputStream is = getApplicationContext().openFileInput("Notes.json");
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            br.close();
+
+            Log.d(TAG, "loadFile: JSON: " + sb.toString());
+
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            for (int i=0; i<jsonArray.length(); i++) {
+                JSONObject jsonObject = (JSONObject) jsonArray.get(i);
+                String nTitle = jsonObject.getString("noteTitle");
+                String nContent = jsonObject.getString("noteContent");
+                String nDate = jsonObject.getString("noteDate");
+                Note n = new Note(nTitle, nContent, nDate);
+                noteList.add(n);
+            }
+            showNotes();
+        } catch (FileNotFoundException e) {
+            Toast.makeText(this, "No JSON Note File Present", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void saveNotes() throws IOException, JSONException {
+        Log.d(TAG, "saveNotes: SAVING JSON FILE");
+        FileOutputStream fos = getApplicationContext().openFileOutput("Notes.json", Context.MODE_PRIVATE);
+        JSONArray jsonArray = new JSONArray();
+        for (Note n : noteList) {
+            JSONObject noteJSON = new JSONObject();
+            noteJSON.put("noteTitle", n.getNoteTitle());
+            noteJSON.put("noteContent", n.getNoteContent());
+            noteJSON.put("noteDate", n.getLastUpdateTime());
+            jsonArray.put(noteJSON);
+        }
+        String jsonText = jsonArray.toString();
+        Log.d(TAG, "saveNotes: JSON: " + jsonText);
+
+        fos.write(jsonText.getBytes());
+        fos.close();
     }
 
 
