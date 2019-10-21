@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,9 +17,14 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity
         implements View.OnClickListener, View.OnLongClickListener {
 
+    private static final String TAG = "MainActivity";
+
+    private static final int CODE_EDITNOTE_ACTIVITY = 10;
+
     private ArrayList<Note> noteList = new ArrayList<>();
     private RecyclerView recyclerView;
     private NoteAdapter noteAdapter;
+    private int currNote = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,13 +39,12 @@ public class MainActivity extends AppCompatActivity
 
         makeList();
         updateTitle();
-        //setTitle("Notes (" + noteList.size() + ")");
     }
 
     private void makeList() {
         // to have some default notes loaded
         // maybe a 'welcome to notes' object with some information?
-        Note n = new Note("Title of note", "Some content that will be added to the note.", "right now");
+        Note n = new Note("Welcome to Notes", "Some content that will be added to the note.", "right now");
         noteList.add(n);
         Note n2 = new Note("Another Title", "Some other content", "yesterday");
         noteList.add(n2);
@@ -61,6 +66,13 @@ public class MainActivity extends AppCompatActivity
     public void openEditActivity() {
         Intent intent = new Intent(this, EditActivity.class);
         startActivity(intent);
+    }
+
+    public void openNoteInEditActivity(View view, int pos) {
+        Note selectedNote = noteList.get(pos);
+        Intent intent = new Intent(MainActivity.this, EditActivity.class);
+        intent.putExtra("note", selectedNote);
+        startActivityForResult(intent, CODE_EDITNOTE_ACTIVITY);
     }
 
     @Override
@@ -87,10 +99,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onClick(View view) {
+        Log.d(TAG, "onClick: ");
         int pos = recyclerView.getChildLayoutPosition(view);
-        Note selection = noteList.get(pos);
-        Toast.makeText(this, "Selected: " + selection.getNoteTitle(), Toast.LENGTH_LONG).show();
-        // open EditActivity passing in current selection
+        currNote = pos;
+        openNoteInEditActivity(view, pos);
     }
 
     /**
@@ -101,6 +113,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public boolean onLongClick(View view) {
+        Log.d(TAG, "onLongClick: ");
         int pos = recyclerView.getChildLayoutPosition(view);
         // confirm delete dialog
         noteList.remove(pos);
@@ -111,10 +124,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-
-        // if not saved, prompt save
         super.onBackPressed();
     }
+
 
     public String getCurrentTime() {
         // system.printmillis() then convert to a real timestamp
@@ -123,6 +135,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     // auto-save when onpause
+
+    
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CODE_EDITNOTE_ACTIVITY) {
+            if (resultCode == RESULT_OK) {
+
+                Note note = (Note) data.getSerializableExtra("input");
+                String noteTitle = note.getNoteTitle();
+                String noteContent = note.getNoteContent();
+
+                Note n = noteList.get(currNote);
+                n.setNoteTitle(noteTitle);
+                n.setNoteContent(noteContent);
+
+
+                Log.d(TAG, "onActivityResult: noteTitle: " + noteTitle + " noteList[i]: ");
+
+                noteAdapter.notifyDataSetChanged();
+            }
+        }
+    }
 
 
 }

@@ -1,6 +1,8 @@
 package com.example.notepad;
 
-public class Note {
+import java.io.Serializable;
+
+public class Note implements Serializable {
 
     private String noteTitle;
     private String noteContent;
