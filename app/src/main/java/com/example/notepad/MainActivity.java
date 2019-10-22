@@ -24,15 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 
 
 /**
- *
- *
  *  still need to:
- *  make sure notes appear in order based on last updated timestamp
- *
+ *  notes should appear in order based on last updated timestamp (newest at top)
  *
  */
 
@@ -65,27 +61,18 @@ public class MainActivity extends AppCompatActivity
 
         loadFile();
 
-        makeList();
+        // makeList();
         updateTitle();  // reflects current number of notes
     }
 
-
-
     private void makeList() {
         // to have some default notes loaded
-        // maybe a 'welcome to notes' object with some information?
-        Note n = new Note("Welcome to Notes", "Some content that will be added to the note.", "right now");
+        Note n = new Note("Welcome to Notes", "Caution: notes without titles will not be saved.", "init");
         noteList.add(n);
-        Note n2 = new Note("Another Title", "Some other content", "yesterday");
-        noteList.add(n2);
     }
 
     private void updateTitle() {
         setTitle("Notes (" + noteList.size() + ")");
-    }
-
-    public void testClick() {
-        Toast.makeText(this, "Hi", Toast.LENGTH_LONG).show();
     }
 
     public void openAboutActivity() {
@@ -140,7 +127,6 @@ public class MainActivity extends AppCompatActivity
     /**
      * Removes the selected note on LongClick
      * and redraws the updated list
-     * @param view
      * @return true
      */
     @Override
@@ -158,72 +144,28 @@ public class MainActivity extends AppCompatActivity
     public void onBackPressed() {
         super.onBackPressed();
     }
-
-    // auto-save when onpause
-
     
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == EDIT_NOTE_CODE) {
-            Log.d(TAG, "onActivityResult: EDIT_NOTE_CODE");
-        }
-        else if (requestCode == NEW_NOTE_CODE) {
-            Log.d(TAG, "onActivityResult: NEW_NOTE_CODE");
-        }
-
-        if (data.hasExtra("input")) {
-            Note note = (Note) data.getSerializableExtra("input");
-
-            if (note != null) {
-                Log.d(TAG, "onActivityResult: note object is NOT null");
-
+        if (requestCode == EDIT_NOTE_CODE || requestCode == NEW_NOTE_CODE) {
+            if (resultCode == RESULT_OK) {
+                Note note = (Note) data.getSerializableExtra("input");
                 String title = note.getNoteTitle();
-                if (title != null) {
-                    Log.d(TAG, "onActivityResult: title: " + title);
+                String content = note.getNoteContent();
+                String update = note.getLastUpdateTime();
 
-                    String content = note.getNoteContent();
-                    if (content != null) {
-                        Log.d(TAG, "onActivityResult: content: " + content);
-
-                        String update = note.getLastUpdateTime();
-                        if (update != null) {
-                            Log.d(TAG, "onActivityResult: update: " + update);
-
-
-
-
-
-                            if (currNote == -1) {
-                                Log.d(TAG, "onActivityResult: This is a new note to be added");
-
-                                noteList.add(note);
-
-
-                            }
-                            else {
-                                Log.d(TAG, "onActivityResult: This is an existing note at index " + currNote);
-                                Note n = noteList.get(currNote);
-                                n.setNoteTitle(title);
-                                n.setNoteContent(content);
-                                n.setLastUpdateTime(update);
-
-                            }
-
-
-
-
-                        }
-                        else Log.d(TAG, "onActivityResult: ERROR5");
-                    }
-                    else Log.d(TAG, "onActivityResult: ERROR4");
+                if (currNote == -1) {
+                    noteList.add(note);
                 }
-                else Log.d(TAG, "onActivityResult: ERROR3");
-            }
-            else Log.d(TAG, "onActivityResult: ERROR2");
-        }
-        else Log.d(TAG, "onActivityResult: ERROR1");
+                else {
+                    Note n = noteList.get(currNote);
+                    n.setNoteTitle(title);
+                    n.setNoteContent(content);
+                }
 
+            }
+        }
 
         // Collections.sort(noteList);
 
@@ -231,6 +173,7 @@ public class MainActivity extends AppCompatActivity
         updateTitle();
 
     }
+
 
     private void showNotes() {
 
@@ -268,6 +211,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    protected void onPause() {
+        try {
+            saveNotes();
+            Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
+        } catch (IOException | JSONException e) {
+            Toast.makeText(this, "Not saved", Toast.LENGTH_SHORT).show();
+        }
+        super.onPause();
+    }
 
     private void saveNotes() throws IOException, JSONException {
         Log.d(TAG, "saveNotes: SAVING JSON FILE");

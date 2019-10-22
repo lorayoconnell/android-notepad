@@ -1,14 +1,25 @@
+/**
+ * A note without a title is not allowed to be saved (even if there is note text).
+ * If such an attempt is made simply exit the activity without saving and show a
+ * Toast message indicating that the un-titled activity was not saved.
+ */
+
 package com.example.notepad;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,6 +32,8 @@ public class EditActivity extends AppCompatActivity {
 
     private EditText editTitleText;
     private EditText editContentText;
+    private String origTitle;
+    private String origContent;
     private Note note;
 
     @Override
@@ -37,9 +50,11 @@ public class EditActivity extends AppCompatActivity {
             note = (Note) intent.getSerializableExtra("note");
 
             String t = note.getNoteTitle();
+            origTitle = t;
             if (t != null)
                 editTitleText.setText(note.getNoteTitle());
             String c = note.getNoteContent();
+            origContent = c;
             if (c != null)
                 editContentText.setText(note.getNoteContent());
         }
@@ -50,40 +65,35 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void updateNote() {
-        Intent data = new Intent();
 
+        Log.d(TAG, "updateNote: before taking any action");
+        
+        Intent data = new Intent();
         String title = editTitleText.getText().toString();
         String content = editContentText.getText().toString();
         String update = getUpdateTime();
 
-        getUpdateTime();
-
-
-        if (note == null) {
-            Log.d(TAG, "updateNote: Note object does not yet exist.");
-            note = new Note(title, content, update);
-        } else if (title.isEmpty()) {
-
-
-            // dialog telling user that title cannot be empty
-
-
+        if (title.isEmpty()) {
+            Log.d(TAG, "updateNote: title.isEmpty - NO SAVE");
+            Toast.makeText(this, "Un-titled note was not saved.", Toast.LENGTH_LONG).show();
+            finish();
         }
         else {
-            Log.d(TAG, "updateNote: Updating an existing note.");
-            note.setNoteTitle(title);
-            note.setNoteContent(content);
-            note.setLastUpdateTime(update);
+            if (note == null) {
+                note = new Note(title, content, update);
+            } else {
+                note.setNoteTitle(title);
+                note.setNoteContent(content);
+                note.setLastUpdateTime(update);
+            }
+
+            if (note == null) {
+                Log.d(TAG, "updateNote: ERROR - note should not be null at this point");
+            }
+            data.putExtra("input", note);
+            setResult(RESULT_OK, data);
+            finish();
         }
-
-        if (note == null) {
-            Log.d(TAG, "updateNote: ERROR - note should not be null at this point");
-        }
-
-
-        data.putExtra("input", note);
-        setResult(RESULT_OK, data);
-        finish();
     }
 
     private String getUpdateTime() {
@@ -112,52 +122,41 @@ public class EditActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Log.d(TAG, "onBackPressed: ");
-        Intent data = new Intent();
-        // updateNote();
 
-
-
-
-
-
-
-
-
-       /*
-        Log.d(TAG, "updateNote: newTitle: " + editTitleText.getText().toString());
-        //Intent data = new Intent();
-
-        String title = editTitleText.getText().toString();
-        String content = editContentText.getText().toString();
-        String update = "date&time";
-
-        note = new Note(title,content,update);
-
-        if (note == null) {
-            //Log.d(TAG, "updateNote: note object doesn't exist");
-            note = new Note(title,content,update);
+        // if note hasn't been changed, just finish()
+        String newTitle = editTitleText.getText().toString();
+        String newContent = editContentText.getText().toString();
+        if (newTitle.equals(origTitle) && newContent.equals(origContent)) {
+            finish();
         }
+        else if (newTitle.isEmpty()) {
+            Log.d(TAG, "updateNote: title.isEmpty - NO SAVE");
+            Toast.makeText(this, "Un-titled note was not saved.", Toast.LENGTH_LONG).show();
+            finish();
+        }
+
         else {
-            //Log.d(TAG, "updateNote: updating an old note");
-            note.setNoteTitle(title);
-            note.setNoteContent(content);
-            note.setLastUpdateTime(update);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Wait!");
+            builder.setMessage("Do you want to save your note?");
+
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+
+                    updateNote();
+
+                }
+            });
+
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    finish();
+                }
+            });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
-
-        //data.putExtra("input", note);
-        //setResult(RESULT_OK, data);
-        //Log.d(TAG, "updateNote: Time to send back results");
-        //finish();
-*/
-
-
-
-
-
-    //    data.putExtra("input", note);
-    //    setResult(RESULT_OK, data);
-        super.onBackPressed();
     }
 
 }

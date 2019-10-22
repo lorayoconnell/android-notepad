@@ -24,20 +24,19 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
     @NonNull
     @Override
     public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        //Log.d(TAG, "onCreateViewHolder: CREATING NEW");
+        Log.d(TAG, "onCreateViewHolder: CREATING NEW");
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_note_item, parent, false);
         itemView.setOnClickListener(mainActivity);
         itemView.setOnLongClickListener(mainActivity);
-
         return new NoteViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
-        //Log.d(TAG, "onBindViewHolder: SETTING ITEM DATA");
-        Note selectedNote = noteList.get(position);    // get current note
+        Log.d(TAG, "onBindViewHolder: SETTING ITEM DATA");
+        Note selectedNote = noteList.get(position);
         holder.titleText.setText(selectedNote.getNoteTitle());
-        holder.contentText.setText(selectedNote.getNoteContent());
+        holder.contentText.setText(getFirst80chars(selectedNote.getNoteContent()));
         holder.timeText.setText(selectedNote.getLastUpdateTime());
     }
 
@@ -45,4 +44,15 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
     public int getItemCount() {
         return noteList.size();
     }
+
+
+    private String getFirst80chars(String str) {
+        int len = str.length();
+        if (len > 80) {
+            str = str.substring(0,80) + "...";
+        }
+        return str;
+    }
+
+
 }
