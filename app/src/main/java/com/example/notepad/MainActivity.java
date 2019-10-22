@@ -1,10 +1,20 @@
+/**
+ *
+ * didn't add spacing in between list items
+ * in list_note_item.xml
+ *
+ */
+
+
 package com.example.notepad;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,17 +33,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
-
-/**
- *  still need to:
- *  notes should appear in order based on last updated timestamp (newest at top)
- *
- */
-
-
-
+import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity
         implements View.OnClickListener, View.OnLongClickListener {
@@ -65,11 +67,11 @@ public class MainActivity extends AppCompatActivity
         updateTitle();  // reflects current number of notes
     }
 
-    private void makeList() {
+    //private void makeList() {
         // to have some default notes loaded
-        Note n = new Note("Welcome to Notes", "Caution: notes without titles will not be saved.", "init");
-        noteList.add(n);
-    }
+        //Note n = new Note("Welcome to Notes", "Caution: notes without titles will not be saved.", "init");
+        //noteList.add(n);
+    //}
 
     private void updateTitle() {
         setTitle("Notes (" + noteList.size() + ")");
@@ -132,11 +134,31 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onLongClick(View view) {
         Log.d(TAG, "onLongClick: ");
-        int pos = recyclerView.getChildLayoutPosition(view);
+        final int pos = recyclerView.getChildLayoutPosition(view);
         // confirm delete dialog
-        noteList.remove(pos);
-        updateTitle();
-        noteAdapter.notifyDataSetChanged();
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Wait!");
+        builder.setMessage("Are you sure you want to delete your note?");
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                noteList.remove(pos);
+                updateTitle();
+                noteAdapter.notifyDataSetChanged();
+            }
+        });
+
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //finish();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
         return true;
     }
 
@@ -153,7 +175,9 @@ public class MainActivity extends AppCompatActivity
                 Note note = (Note) data.getSerializableExtra("input");
                 String title = note.getNoteTitle();
                 String content = note.getNoteContent();
-                String update = note.getLastUpdateTime();
+
+                long update = note.getLastUpdateTime();
+                String upd = millisToStr(update);
 
                 if (currNote == -1) {
                     noteList.add(note);
@@ -162,18 +186,21 @@ public class MainActivity extends AppCompatActivity
                     Note n = noteList.get(currNote);
                     n.setNoteTitle(title);
                     n.setNoteContent(content);
+                    n.setLastUpdateTime(update);
                 }
-
             }
         }
-
-        // Collections.sort(noteList);
+        Collections.sort(noteList);
+        Collections.reverse(noteList);
 
         noteAdapter.notifyDataSetChanged();
         updateTitle();
-
     }
 
+    private String millisToStr(long m) {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d, h:mm a");
+        return sdf.format(m);
+    }
 
     private void showNotes() {
 
@@ -192,14 +219,12 @@ public class MainActivity extends AppCompatActivity
             }
             br.close();
 
-            Log.d(TAG, "loadFile: JSON: " + sb.toString());
-
             JSONArray jsonArray = new JSONArray(sb.toString());
             for (int i=0; i<jsonArray.length(); i++) {
                 JSONObject jsonObject = (JSONObject) jsonArray.get(i);
                 String nTitle = jsonObject.getString("noteTitle");
                 String nContent = jsonObject.getString("noteContent");
-                String nDate = jsonObject.getString("noteDate");
+                long nDate = jsonObject.getLong("noteDate");
                 Note n = new Note(nTitle, nContent, nDate);
                 noteList.add(n);
             }
@@ -234,11 +259,9 @@ public class MainActivity extends AppCompatActivity
             jsonArray.put(noteJSON);
         }
         String jsonText = jsonArray.toString();
-        Log.d(TAG, "saveNotes: JSON: " + jsonText);
 
         fos.write(jsonText.getBytes());
         fos.close();
     }
-
 
 }

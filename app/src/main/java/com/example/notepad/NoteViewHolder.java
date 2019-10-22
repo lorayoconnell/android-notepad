@@ -17,4 +17,8 @@ public class NoteViewHolder extends RecyclerView.ViewHolder {
         contentText = view.findViewById(R.id.contentText);
         timeText = view.findViewById(R.id.timeText);
     }
+
+
+
 }
+

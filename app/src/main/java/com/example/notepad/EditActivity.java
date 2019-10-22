@@ -9,22 +9,14 @@ package com.example.notepad;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 public class EditActivity extends AppCompatActivity {
 
@@ -66,12 +58,10 @@ public class EditActivity extends AppCompatActivity {
 
     private void updateNote() {
 
-        Log.d(TAG, "updateNote: before taking any action");
-        
         Intent data = new Intent();
         String title = editTitleText.getText().toString();
         String content = editContentText.getText().toString();
-        String update = getUpdateTime();
+        long update = getUpdateTime();
 
         if (title.isEmpty()) {
             Log.d(TAG, "updateNote: title.isEmpty - NO SAVE");
@@ -96,10 +86,9 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
-    private String getUpdateTime() {
-        Date now = Calendar.getInstance().getTime();
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d, h:mm a");
-        return sdf.format(now);
+    private long getUpdateTime() {
+        long res = System.currentTimeMillis();
+        return res;
     }
 
     @Override
@@ -142,9 +131,7 @@ public class EditActivity extends AppCompatActivity {
 
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-
                     updateNote();
-
                 }
             });
 

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
@@ -37,7 +38,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
         Note selectedNote = noteList.get(position);
         holder.titleText.setText(selectedNote.getNoteTitle());
         holder.contentText.setText(getFirst80chars(selectedNote.getNoteContent()));
-        holder.timeText.setText(selectedNote.getLastUpdateTime());
+        long m = selectedNote.getLastUpdateTime();
+        holder.timeText.setText(millisToDate(m));
     }
 
     @Override
@@ -45,13 +47,17 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteViewHolder> {
         return noteList.size();
     }
 
-
     private String getFirst80chars(String str) {
         int len = str.length();
         if (len > 80) {
             str = str.substring(0,80) + "...";
         }
         return str;
+    }
+
+    public String millisToDate(long m) {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d, h:mm a");
+        return sdf.format(m);
     }
 
 
